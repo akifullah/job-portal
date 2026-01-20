@@ -15,6 +15,8 @@ import { Eye, EyeOff, Lock, Mail, User, UserCheck } from 'lucide-react';
 import React, { ChangeEvent, FormEvent, useState } from 'react'
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { userLoginAction } from '@/features/auth/server/userLoginAction';
+import { toast } from 'sonner';
 
 interface RegistrationFormData {
     email: string;
@@ -38,9 +40,26 @@ const LoginPage: React.FC = () => {
     }
 
 
-    const handleSubmit = (e: FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        console.log(formData)
+        try {
+            console.log(formData)
+            const loginData = {
+                email: formData.email,
+                password: formData.password,
+            }
+            const res = await userLoginAction(loginData);
+            console.log(res);
+            if (!res.success) {
+                toast.error(res.message);
+            }
+            if (res.success) {
+                toast.success(res.message);
+            }
+        } catch (error) {
+            toast.error("Something went wrong!")
+        }
+
     }
 
     return (

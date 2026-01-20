@@ -15,43 +15,29 @@ import { Eye, EyeOff, Lock, Mail, User, UserCheck } from 'lucide-react';
 import React, { ChangeEvent, FormEvent, useState } from 'react'
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { registrationActions } from './registrationAction.action';
+import { toast } from 'sonner';
+import { useForm } from 'react-hook-form';
+import { RegisterUserWithConfirmDataType, registerUserWithConfirmSchema } from '@/features/auth/auth.schema';
+import { zodResolver } from '@hookform/resolvers/zod';
 
-interface RegistrationFormData {
-    name: string;
-    username: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
-    role: 'applicant' | "employer"
-}
 
 const Registration: React.FC = () => {
 
-    const [formData, setFormData] = useState<RegistrationFormData>({
-        name: "",
-        username: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-        role: "applicant"
+    const { register, handleSubmit, formState: { errors } } = useForm({
+        resolver: zodResolver(registerUserWithConfirmSchema)
     });
 
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    const handleInputChange = (name: string, value: string) => {
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value
-        }));
+    const onSubmit = async (data: RegisterUserWithConfirmDataType) => {
+        const res = await registrationActions(data);
+        if (res.success) {
+            return toast.success(res.message,);
+        }
+        return toast.error(res.message);
     }
-
-
-    const handleSubmit = (e: FormEvent) => {
-        e.preventDefault();
-        console.log(formData)
-    }
-
     return (
         <div className='min-h-screen bg-background flex items-center justify-center p-4'>
             <Card className='w-full max-w-lg'>
@@ -66,9 +52,9 @@ const Registration: React.FC = () => {
                 </CardHeader>
 
                 <CardContent>
-                    <form onSubmit={handleSubmit} className='space-y-5'>
+                    <form onSubmit={handleSubmit(onSubmit)} className='space-y-5'>
 
-                        <div className="space-y-2">
+                        <div className="space-y-0">
                             <Label htmlFor='name'>Full Name *</Label>
                             <div className="relative mt-1">
                                 <User className='absolute top-1/2 -translate-y-1/2 left-2 w-4 pointer-events-none text-muted-foreground' />
@@ -77,15 +63,15 @@ const Registration: React.FC = () => {
                                     type='text'
                                     placeholder='Enter your full name'
                                     required
-                                    value={formData.name}
-                                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                                        handleInputChange("name", e.target.value)
-                                    }}
+                                    {...register('name')}
                                     className='pl-8' />
                             </div>
+                            {
+                                errors.name && <p className='text-sm text-destructive'>{errors.name.message}</p>
+                            }
                         </div>
 
-                        <div className="space-y-2">
+                        <div className="space-y-0">
                             <Label htmlFor='username'>Username *</Label>
                             <div className="relative mt-1">
                                 <User className='absolute top-1/2 -translate-y-1/2 left-2 w-4 pointer-events-none text-muted-foreground' />
@@ -94,15 +80,15 @@ const Registration: React.FC = () => {
                                     type='text'
                                     placeholder='Enter username'
                                     required
-                                    value={formData.username}
-                                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                                        handleInputChange("username", e.target.value)
-                                    }}
+                                    {...register('userName')}
                                     className='pl-8' />
                             </div>
+                            {
+                                errors.userName && <p className='text-sm text-destructive'>{errors.userName.message}</p>
+                            }
                         </div>
 
-                        <div className="space-y-2">
+                        <div className="space-y-0">
                             <Label htmlFor='email'>Email address *</Label>
                             <div className="relative mt-1">
                                 <Mail className='absolute top-1/2 -translate-y-1/2 left-2 w-4 pointer-events-none text-muted-foreground' />
@@ -111,21 +97,19 @@ const Registration: React.FC = () => {
                                     type='text'
                                     placeholder='Enter your email'
                                     required
-                                    value={formData.email}
-                                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                                        handleInputChange("email", e.target.value)
-                                    }}
+                                    {...register('email')}
                                     className='pl-8' />
                             </div>
+                            {
+                                errors.email && <p className='text-sm text-destructive'>{errors.email.message}</p>
+                            }
+
                         </div>
 
-                        <div className="space-y-2">
+                        <div className="space-y-0">
                             <Label htmlFor='role'>I am a *</Label>
                             <Select
-                                value={formData.role}
-                                onValueChange={(value: "applicant" | "employer") => {
-                                    handleInputChange("role", value)
-                                }}
+                                {...register('role')}
                             >
                                 <SelectTrigger className='w-full'>
                                     <SelectValue placeholder="Select your role" />
@@ -139,11 +123,14 @@ const Registration: React.FC = () => {
                                 </SelectContent>
 
                             </Select>
+                            {
+                                errors.role && <p className='text-sm text-destructive'>{errors.role.message}</p>
+                            }
 
                         </div>
 
 
-                        <div className="space-y-2">
+                        <div className="space-y-0">
                             <Label htmlFor='password'>Password *</Label>
                             <div className="relative mt-1">
                                 <Lock className='absolute top-1/2 -translate-y-1/2 left-2 w-4 pointer-events-none text-muted-foreground' />
@@ -152,10 +139,7 @@ const Registration: React.FC = () => {
                                     type={showPassword ? "text" : "password"}
                                     placeholder='Enter a strong password'
                                     required
-                                    value={formData.password}
-                                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                                        handleInputChange("password", e.target.value)
-                                    }}
+                                    {...register('password')}
                                     className='pl-8' />
 
                                 <Button
@@ -172,9 +156,12 @@ const Registration: React.FC = () => {
                                     }
                                 </Button>
                             </div>
+                            {
+                                errors.password && <p className='text-sm text-destructive'>{errors.password.message}</p>
+                            }
                         </div>
 
-                        <div className="space-y-2">
+                        <div className="space-y-0">
                             <Label htmlFor='confirmPassword'>Confirm Password *</Label>
                             <div className="relative mt-1">
                                 <Lock className='absolute top-1/2 -translate-y-1/2 left-2 w-4 pointer-events-none text-muted-foreground' />
@@ -183,10 +170,7 @@ const Registration: React.FC = () => {
                                     type={showConfirmPassword ? "text" : "password"}
                                     placeholder='Confirm Password'
                                     required
-                                    value={formData.confirmPassword}
-                                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                                        handleInputChange("confirmPassword", e.target.value)
-                                    }}
+                                    {...register('confirmPassword')}
                                     className='pl-8' />
                                 <Button
                                     type='button'
@@ -202,9 +186,12 @@ const Registration: React.FC = () => {
                                     }
                                 </Button>
                             </div>
+                            {
+                                errors.confirmPassword && <p className='text-sm text-destructive'>{errors.confirmPassword.message}</p>
+                            }
                         </div>
 
-                        <div className="space-y-2">
+                        <div className="space-y-0">
                             <Button className='w-full cursor-pointer' size={"lg"}>Register</Button>
                         </div>
 
