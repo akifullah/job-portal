@@ -4,14 +4,20 @@ import { users } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 
 import argon2 from "argon2";
+import { LoginUserDataType, loginUserSchema } from "../auth.schema";
+import { createSessionAndSetCookie } from "./use-cases/sessions";
 
-type LoginData = {
-    email: string;
-    password: string;
-};
 
-export const userLoginAction = async (data: LoginData) => {
+export const userLoginAction = async (formData: LoginUserDataType) => {
+    const { data, error } = loginUserSchema.safeParse(formData);
+
+    if (error) return {
+        success: false,
+        message: error.issues[0].message
+    };
+
     const { email, password } = data;
+
     try {
 
         const [user] = await db.select().from(users).where(eq(users.email, email));
@@ -37,6 +43,9 @@ export const userLoginAction = async (data: LoginData) => {
                 message: "Email or password is incorrect."
             }
         }
+
+        await createSessionAndSetCookie(user.id);
+        
         return {
             success: true,
             message: "Logged in successful."

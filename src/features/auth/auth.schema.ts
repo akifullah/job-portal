@@ -1,5 +1,13 @@
 import { z } from 'zod';
 
+export const loginUserSchema = z.object({
+    email: z.string().nonempty("Email is required").email("Please enter a valid email address").trim().toLowerCase(),
+    password: z.string().nonempty("Password is required"),
+});
+
+export type LoginUserDataType = z.infer<typeof loginUserSchema>;
+
+
 export const registerUserSchema = z.object({
     name: z.string().trim().min(2, "Name must be atleast 2 character long."),
 
