@@ -17,14 +17,14 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { registrationActions } from './registrationAction.action';
 import { toast } from 'sonner';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { RegisterUserWithConfirmDataType, registerUserWithConfirmSchema } from '@/features/auth/auth.schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 
 const Registration: React.FC = () => {
 
-    const { register, handleSubmit, formState: { errors } } = useForm({
+    const { register, handleSubmit, formState: { errors }, control } = useForm({
         resolver: zodResolver(registerUserWithConfirmSchema)
     });
 
@@ -108,21 +108,28 @@ const Registration: React.FC = () => {
 
                         <div className="space-y-0">
                             <Label htmlFor='role'>I am a *</Label>
-                            <Select
-                                {...register('role')}
-                            >
-                                <SelectTrigger className='w-full'>
-                                    <SelectValue placeholder="Select your role" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        <SelectLabel>Select your role</SelectLabel>
-                                        <SelectItem value='aplicant'>Applicant</SelectItem>
-                                        <SelectItem value='employer'>Employer</SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
+                            <Controller name='role' control={control}
+                                render={({ field }) => (
+                                    <Select
+                                        {...field}
+                                        onValueChange={(value) => field.onChange(value)}
+                                    >
+                                        <SelectTrigger className='w-full'>
+                                            <SelectValue placeholder="Select your role" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                <SelectLabel>Select your role</SelectLabel>
+                                                <SelectItem value='applicant'>Applicant</SelectItem>
+                                                <SelectItem value='employer'>Employer</SelectItem>
+                                            </SelectGroup>
+                                        </SelectContent>
 
-                            </Select>
+                                    </Select>
+                                )}
+                            >
+                            </Controller>
+
                             {
                                 errors.role && <p className='text-sm text-destructive'>{errors.role.message}</p>
                             }
@@ -204,7 +211,7 @@ const Registration: React.FC = () => {
 
             </Card>
 
-        </div>
+        </div >
     )
 }
 

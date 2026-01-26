@@ -3,6 +3,7 @@
 import { db } from "@/config/db";
 import { users } from "@/drizzle/schema";
 import { RegisterUserDataType, registerUserSchema } from "@/features/auth/auth.schema";
+import { createSessionAndSetCookie } from "@/features/auth/server/use-cases/sessions";
 import argon2 from "argon2";
 import { eq, or } from "drizzle-orm";
 
@@ -38,7 +39,10 @@ export const registrationActions = async (formData: RegisterUserDataType) => {
 
         const hashPassword = await argon2.hash(password);
 
-        await db.insert(users).values({ name, userName, email, password: hashPassword, role });
+        let [registeredUser] = await db.insert(users).values({ name, userName, email, password: hashPassword, role });
+
+
+        await createSessionAndSetCookie(registeredUser.insertId);
 
         return {
             success: true,

@@ -1,5 +1,5 @@
 
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import crypto from "crypto";
 import { getIPAddress } from "./location";
 import { userAgent } from "next/server";
@@ -47,6 +47,14 @@ export const createSessionAndSetCookie = async (userId: number) => {
         userId: userId,
         userAgent: headersList.get("user-agent") || "",
         ip: ip,
-    })
+    });
+
+    const cookieStore = await cookies();
+    cookieStore.set("session", token, {
+        secure: true,
+        httpOnly: true,
+        maxAge: SESSION_LIFETIME,
+    });
+    console.log("Setting session cookie");
 
 }
